@@ -47,7 +47,7 @@ client.on('auth_failure', (msg) => {
 client.on('ready', () => {
     isReady = true;
     qrCodeData = '';
-    console.log('🚀 WhatsApp is fully Ready and Connected!');
+    console.log('🚀 WhatsApp is fully Ready and Connected! Client Info:', client.info);
 });
 
 client.on('disconnected', (reason) => {
@@ -61,7 +61,8 @@ client.initialize().catch(err => {
 });
 
 app.get('/qr', async (req, res) => {
-    if (isReady) {
+    // Agar client pehle se connected hai toh ready message show karein
+    if (isReady || client.info) {
         return res.send('<h2 style="color: green; text-align: center; margin-top: 50px;">WhatsApp is already Connected and Ready! ✅</h2>');
     }
     if (!qrCodeData) {
@@ -88,7 +89,8 @@ app.post('/send-message', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Phone aur message dono zaroori hain!' });
     }
 
-    if (!isReady) {
+    // isReady ke sath client.info check bhi lagaya hai taaki session drop na ho
+    if (!isReady && !client.info) {
         return res.status(500).json({ success: false, error: 'WhatsApp connected nahi hai! Pehle /qr URL par jakar QR scan karein.' });
     }
 
