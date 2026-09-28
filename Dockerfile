@@ -1,7 +1,8 @@
 FROM node:20-slim
 
-# Install Chromium and dependencies
+# Install Chromium, Git and system dependencies
 RUN apt-get update && apt-get install -y \
+    git \
     wget \
     gnupg \
     chromium \
