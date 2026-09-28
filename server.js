@@ -25,7 +25,8 @@ const client = new Client({
             '--no-first-run',
             '--no-zygote',
             '--single-process',
-            '--disable-gpu'
+            '--disable-gpu',
+            '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         ]
     }
 });
@@ -47,7 +48,7 @@ client.on('auth_failure', (msg) => {
 client.on('ready', () => {
     isReady = true;
     qrCodeData = '';
-    console.log('🚀 WhatsApp is fully Ready and Connected! Client Info:', client.info);
+    console.log('🚀 WhatsApp is fully Ready and Connected!');
 });
 
 client.on('disconnected', (reason) => {
@@ -55,13 +56,11 @@ client.on('disconnected', (reason) => {
     console.log('⚠️ WhatsApp Disconnected:', reason);
 });
 
-// Safely initialize client with error catching
 client.initialize().catch(err => {
     console.error('❌ Failed to initialize WhatsApp client:', err);
 });
 
 app.get('/qr', async (req, res) => {
-    // Agar client pehle se connected hai toh ready message show karein
     if (isReady || client.info) {
         return res.send('<h2 style="color: green; text-align: center; margin-top: 50px;">WhatsApp is already Connected and Ready! ✅</h2>');
     }
@@ -89,9 +88,12 @@ app.post('/send-message', async (req, res) => {
         return res.status(400).json({ success: false, error: 'Phone aur message dono zaroori hain!' });
     }
 
-    // isReady ke sath client.info check bhi lagaya hai taaki session drop na ho
+    // Debugging ke liye state return karenge agar connected nahi hai
     if (!isReady && !client.info) {
-        return res.status(500).json({ success: false, error: 'WhatsApp connected nahi hai! Pehle /qr URL par jakar QR scan karein.' });
+        return res.status(500).json({ 
+            success: false, 
+            error: 'WhatsApp connected nahi hai! Server state: isReady=' + isReady + ', hasInfo=' + !!client.info 
+        });
     }
 
     try {
@@ -104,7 +106,6 @@ app.post('/send-message', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-// Binding explicitly to '0.0.0.0' for Render
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
 });
