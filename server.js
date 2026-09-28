@@ -11,12 +11,10 @@ app.use(bodyParser.json());
 let qrCodeData = '';
 let isReady = false;
 
-// Updated Client configuration for cloud/Render environment
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        headless: true,
-        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+        executablePath: '/usr/bin/chromium',
         args: [
             '--no-sandbox',
             '--disable-setuid-sandbox',
@@ -24,7 +22,7 @@ const client = new Client({
             '--disable-accelerated-2d-canvas',
             '--no-first-run',
             '--no-zygote',
-            '--single-process', 
+            '--single-process',
             '--disable-gpu'
         ]
     }
