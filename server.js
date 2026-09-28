@@ -31,13 +31,26 @@ const client = new Client({
 client.on('qr', (qr) => {
     qrCodeData = qr;
     isReady = false;
-    console.log('QR Code received, scan it on /qr URL');
+    console.log('--- NEW QR CODE RECEIVED ---');
+});
+
+client.on('authenticated', () => {
+    console.log('✅ WhatsApp Authenticated Successfully!');
+});
+
+client.on('auth_failure', (msg) => {
+    console.error('❌ WhatsApp Authentication Failed:', msg);
 });
 
 client.on('ready', () => {
     isReady = true;
     qrCodeData = '';
-    console.log('WhatsApp is ready!');
+    console.log('🚀 WhatsApp is fully Ready and Connected!');
+});
+
+client.on('disconnected', (reason) => {
+    isReady = false;
+    console.log('⚠️ WhatsApp Disconnected:', reason);
 });
 
 client.initialize();
@@ -47,7 +60,7 @@ app.get('/qr', async (req, res) => {
         return res.send('<h2 style="color: green; text-align: center; margin-top: 50px;">WhatsApp is already Connected and Ready! ✅</h2>');
     }
     if (!qrCodeData) {
-        return res.send('<h3 style="text-align: center; margin-top: 50px;">Generating QR code, please refresh the page in 5-10 seconds... 🔄</h3>');
+        return res.send('<h3 style="text-align: center; margin-top: 50px;">Generating QR code or waiting... Please refresh in 10 seconds. 🔄</h3>');
     }
     try {
         const url = await qrcode.toDataURL(qrCodeData);
@@ -55,7 +68,7 @@ app.get('/qr', async (req, res) => {
             <div style="text-align: center; margin-top: 50px;">
                 <h2>Scan this QR Code with your Gym WhatsApp</h2>
                 <img src="${url}" alt="WhatsApp QR Code" style="width: 300px; height: 300px;"/>
-                <p>Refresh this page if the QR code expires.</p>
+                <p>Refresh this page after scanning.</p>
             </div>
         `);
     } catch (err) {
