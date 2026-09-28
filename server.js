@@ -11,10 +11,22 @@ app.use(bodyParser.json());
 let qrCodeData = '';
 let isReady = false;
 
+// Updated Client configuration for cloud/Render environment
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
+        headless: true,
+        executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+        args: [
+            '--no-sandbox',
+            '--disable-setuid-sandbox',
+            '--disable-dev-shm-usage',
+            '--disable-accelerated-2d-canvas',
+            '--no-first-run',
+            '--no-zygote',
+            '--single-process', 
+            '--disable-gpu'
+        ]
     }
 });
 
@@ -32,7 +44,6 @@ client.on('ready', () => {
 
 client.initialize();
 
-// Web route to view QR code for scanning
 app.get('/qr', async (req, res) => {
     if (isReady) {
         return res.send('<h2 style="color: green; text-align: center; margin-top: 50px;">WhatsApp is already Connected and Ready! ✅</h2>');
@@ -54,7 +65,6 @@ app.get('/qr', async (req, res) => {
     }
 });
 
-// API endpoint for InfinityFree PHP to trigger message
 app.post('/send-message', async (req, res) => {
     const { phone, message } = req.body;
 
