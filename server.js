@@ -11,6 +11,8 @@ app.use(bodyParser.json());
 let qrCodeData = '';
 let isReady = false;
 
+console.log('Initializing WhatsApp Client...');
+
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -53,7 +55,10 @@ client.on('disconnected', (reason) => {
     console.log('⚠️ WhatsApp Disconnected:', reason);
 });
 
-client.initialize();
+// Safely initialize client with error catching
+client.initialize().catch(err => {
+    console.error('❌ Failed to initialize WhatsApp client:', err);
+});
 
 app.get('/qr', async (req, res) => {
     if (isReady) {
@@ -97,6 +102,7 @@ app.post('/send-message', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
+// Binding explicitly to '0.0.0.0' for Render
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Server is running on port ${PORT}`);
 });
