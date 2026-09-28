@@ -39,10 +39,14 @@ client.on('qr', (qr) => {
 
 client.on('authenticated', () => {
     console.log('✅ WhatsApp Authenticated Successfully!');
+    // Forcefully ready mark kar rahe hain taaki state stuck na ho
+    isReady = true;
+    qrCodeData = '';
 });
 
 client.on('auth_failure', (msg) => {
     console.error('❌ WhatsApp Authentication Failed:', msg);
+    isReady = false;
 });
 
 client.on('ready', () => {
@@ -61,7 +65,7 @@ client.initialize().catch(err => {
 });
 
 app.get('/qr', async (req, res) => {
-    if (isReady || client.info) {
+    if (isReady) {
         return res.send('<h2 style="color: green; text-align: center; margin-top: 50px;">WhatsApp is already Connected and Ready! ✅</h2>');
     }
     if (!qrCodeData) {
@@ -86,14 +90,6 @@ app.post('/send-message', async (req, res) => {
 
     if (!phone || !message) {
         return res.status(400).json({ success: false, error: 'Phone aur message dono zaroori hain!' });
-    }
-
-    // Debugging ke liye state return karenge agar connected nahi hai
-    if (!isReady && !client.info) {
-        return res.status(500).json({ 
-            success: false, 
-            error: 'WhatsApp connected nahi hai! Server state: isReady=' + isReady + ', hasInfo=' + !!client.info 
-        });
     }
 
     try {
